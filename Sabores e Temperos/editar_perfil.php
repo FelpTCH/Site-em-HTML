@@ -121,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <?php
       $foto_atual = $usuario['foto'] ?? 'assets/images/default-profile.png';
       ?>
-      <img src="<?= htmlspecialchars($foto_atual) ?>" alt="Foto atual" class="foto-atual">
+      <img src="<?= htmlspecialchars($foto_atual) ?>" alt="" class="foto-atual">
 
       <form method="POST" enctype="multipart/form-data">
         <div class="mb-3">
