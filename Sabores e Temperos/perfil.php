@@ -1,4 +1,6 @@
 <?php
+ini_set('session.gc_maxlifetime', 86400); // 24 horas em segundos
+session_set_cookie_params(86400); // Cookie válido por 24 horas
 // Iniciar a sessão e verificar se o usuário está logado
 session_start();
 
@@ -130,13 +132,7 @@ $foto = isset($usuario['foto']) && !empty($usuario['foto'])
 }
 
   </style>
-</head>
 
-
-  </style>
-</head>
-
-  </style>
 </head>
 <body class="bg-light">
 
@@ -153,6 +149,8 @@ $foto = isset($usuario['foto']) && !empty($usuario['foto'])
     <a href="logout.php" class="nav-link">Sair</a>
   </nav>
 
+  
+
   <div class="search-box mt-2 mt-md-0">
     <input type="text" placeholder="Buscar receitas..." class="form-control search-input">
   </div>
@@ -161,7 +159,8 @@ $foto = isset($usuario['foto']) && !empty($usuario['foto'])
   <div class="container mt-5">
     <div class="row justify-content-center">
       <div class="col-md-8 col-lg-6 perfil-box text-center">
-        <img src="<?= htmlspecialchars($foto) ?>" alt="Foto do usuário" class="foto-perfil mb-4" />
+        <img src="<?= htmlspecialchars($foto) ?>" alt="" class="foto-perfil" />
+        <span class="foto-legenda">Minha Foto</span>
         <h2 class="mb-4">Meu Perfil</h2>
         <p><span class="perfil-label">Nome:</span> <?= htmlspecialchars($usuario['nome']) ?></p>
         <p><span class="perfil-label">E-mail:</span> <?= htmlspecialchars($usuario['email']) ?></p>
@@ -171,6 +170,8 @@ $foto = isset($usuario['foto']) && !empty($usuario['foto'])
       </div>
     </div>
   </div>
+
+  
 </main>
 
 

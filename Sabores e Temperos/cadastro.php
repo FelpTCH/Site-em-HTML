@@ -1,5 +1,13 @@
 <?php
+ini_set('session.gc_maxlifetime', 86400); // 24 horas em segundos
+session_set_cookie_params(86400); // Cookie válido por 24 horas
+
 session_start();
+
+if (isset($_SESSION['usuario_id'])) {
+    header("Location: perfil.php");
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: cadastro.html");
@@ -14,6 +22,18 @@ $nome = $_POST['nome'];
 $email = $_POST['email'];
 $senhaOriginal = $_POST['senha'];
 $senhaConfirmada = $_POST['confirmaSenha'];
+
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $mensagem = "E-mail inválido. <a href='cadastro.html' class='alert-link'>Tente novamente</a>.";
+    $sucesso = false;
+    goto mostrarMensagem;
+}
+
+if (strlen($senhaOriginal) < 6) {
+    $mensagem = "A senha deve ter pelo menos 6 caracteres. <a href='cadastro.html' class='alert-link'>Tente novamente</a>.";
+    $sucesso = false;
+    goto mostrarMensagem;
+}
 
 if ($senhaOriginal !== $senhaConfirmada) {
     $mensagem = "As senhas não coincidem. <a href='cadastro.html' class='alert-link'>Tente novamente</a>.";

@@ -1,37 +1,32 @@
 <?php
+ini_set('session.gc_maxlifetime', 86400); // 24 horas
+session_set_cookie_params(86400); // cookie válido por 24h
 session_start();
 
-// Conexão com o banco
+// conexão com o banco
 $host = "localhost";
 $usuario = "root";
 $senha = "";
 $banco = "sabores";
 
 $conn = new mysqli($host, $usuario, $senha, $banco);
-
-// Verifica se houve erro na conexão
 if ($conn->connect_error) {
     die("Erro na conexão: " . $conn->connect_error);
 }
 
-// Obtém os dados do formulário
-$email = $_POST['email'];
-$senha_digitada = $_POST['senha'];
+$email = $_POST['email'] ?? '';
+$senha_digitada = $_POST['senha'] ?? '';
 
-// Prepara e executa a consulta
 $sql = "SELECT id, nome, email, senha FROM usuarios WHERE email = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Verifica se o usuário existe
 if ($result->num_rows === 1) {
     $usuario = $result->fetch_assoc();
 
-    // Verifica a senha
     if (password_verify($senha_digitada, $usuario['senha'])) {
-        // Login bem-sucedido
         $_SESSION['usuario'] = [
             'id' => $usuario['id'],
             'nome' => $usuario['nome'],
