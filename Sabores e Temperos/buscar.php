@@ -60,6 +60,32 @@ $mysqli->close();
         .btn-success:hover {
             background-color: #2e8b57;
         }
+
+        html, body {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+body {
+  background-color: #f6fff7;
+  /* outros estilos */
+}
+
+.container {
+  flex: 1 0 auto; /* conteúdo principal expande e empurra o footer para baixo */
+}
+
+footer {
+  flex-shrink: 0; /* footer não encolhe */
+  background-color: #2e7d32 !important;
+  color: #c9f7c4 !important;
+  text-align: center;
+  padding: 1rem 0;
+  border-radius: 0 0 12px 12px;
+}
+
     </style>
 </head>
 <body>
@@ -78,9 +104,17 @@ $mysqli->close();
       <a href="perfil.php" class="nav-link">Perfil</a>
     </nav>
   
-    <div class="search-box mt-2 mt-md-0">
-      <input type="text" placeholder="Buscar receitas..." class="form-control search-input">
-    </div>
+     <div class="search-box mt-2 mt-md-0">
+  <form action="buscar.php" method="GET">
+    <input
+      type="text"
+      name="q"
+      placeholder="Buscar receitas..."
+      class="form-control search-input"
+      autocomplete="off"
+    />
+  </form>
+</div>
   </header>
 
 <div class="container my-5">
@@ -97,7 +131,7 @@ $mysqli->close();
             <div class="card-body">
               <h5 class="card-title"><?php echo htmlspecialchars($r['titulo']); ?></h5>
               <p class="card-text"><?php echo htmlspecialchars(mb_strimwidth($r['descricao'], 0, 100, '...')); ?></p>
-              <a href="receita.php?id=<?php echo $r['id']; ?>" class="btn btn-success">Ver receita</a>
+              <a href="goat.php?id=<?php echo $r['id']; ?>" class="btn btn-success">Ver receita</a>
             </div>
           </div>
         </div>

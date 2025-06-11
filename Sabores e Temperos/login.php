@@ -57,6 +57,11 @@ if ($result->num_rows === 1) {
 
 $conn->close();
 
+if (!isset($_SESSION['usuario'])) {
+    header("Location: login.html");
+    exit();
+}
+
 ?>
 
 

@@ -3,10 +3,9 @@ ini_set('session.gc_maxlifetime', 86400); // 24 horas
 session_set_cookie_params(86400);
 session_start();
 
-// Redireciona se já estiver logado
-if (isset($_SESSION['usuario_id'])) {
-    header("Location: perfil.php");
-    exit;
+if (!isset($_SESSION['usuario'])) {
+    header("Location: login.html");
+    exit();
 }
 
 // Redireciona se não for POST
@@ -77,6 +76,9 @@ if ($stmt->execute()) {
 function mostrarMensagem($sucesso, $mensagem) {
     $tipoAlerta = $sucesso ? 'success' : 'danger';
     $redireciona = $sucesso ? '3;url=index.php' : '10';
+
+session_unset();     // Limpa todas as variáveis da sessão
+session_destroy();   // Encerra a sessão
 
     echo <<<HTML
 <!DOCTYPE html>

@@ -65,8 +65,16 @@ if (!$receita) {
     </nav>
 
     <div class="search-box mt-2 mt-md-0">
-        <input type="text" placeholder="Buscar receitas..." class="form-control search-input">
-    </div>
+  <form action="buscar.php" method="GET">
+    <input
+      type="text"
+      name="q"
+      placeholder="Buscar receitas..."
+      class="form-control search-input"
+      autocomplete="off"
+    />
+  </form>
+</div>
 </header>
 
 <div class="container my-5">

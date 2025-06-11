@@ -1,6 +1,6 @@
 <?php
-ini_set('session.gc_maxlifetime', 86400); // 24 horas em segundos
-session_set_cookie_params(86400); // Cookie válido por 24 horas
+ini_set('session.gc_maxlifetime', 86400);
+session_set_cookie_params(86400);
 session_start();
 
 if (!isset($_SESSION['usuario']) || !is_array($_SESSION['usuario'])) {
@@ -8,8 +8,26 @@ if (!isset($_SESSION['usuario']) || !is_array($_SESSION['usuario'])) {
     exit();
 }
 
-$usuario = $_SESSION['usuario'];
+$usuario_id = $_SESSION['usuario']['id'];
 $erro = '';
+
+$conn = new mysqli("localhost", "root", "", "sabores");
+if ($conn->connect_error) {
+    die("Erro na conexão: " . $conn->connect_error);
+}
+
+// Carrega os dados do usuário (nome, email, foto, apresentação)
+$sqlUser = "SELECT nome, email, foto, apresentacao FROM usuarios WHERE id = ?";
+$stmtUser = $conn->prepare($sqlUser);
+$stmtUser->bind_param("i", $usuario_id);
+$stmtUser->execute();
+$dados = $stmtUser->get_result()->fetch_assoc();
+$stmtUser->close();
+
+$nome_atual = $dados['nome'];
+$email_atual = $dados['email'];
+$foto_atual = $dados['foto'] ?: 'img/foto_padrao.png';
+$apresentacao_atual = $dados['apresentacao'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $novo_nome = trim($_POST['nome'] ?? '');
@@ -21,27 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!filter_var($novo_email, FILTER_VALIDATE_EMAIL)) {
         $erro = "Email inválido.";
     } else {
-        $conn = new mysqli("localhost", "root", "", "sabores");
-        if ($conn->connect_error) {
-            die("Erro na conexão: " . $conn->connect_error);
-        }
-
-        // Busca foto atual
-        $foto_atual = null;
-        $sqlBusca = "SELECT foto FROM usuarios WHERE id = ?";
-        $stmtBusca = $conn->prepare($sqlBusca);
-        $stmtBusca->bind_param("i", $usuario['id']);
-        $stmtBusca->execute();
-        $resBusca = $stmtBusca->get_result();
-        if ($resBusca->num_rows === 1) {
-            $row = $resBusca->fetch_assoc();
-            $foto_atual = $row['foto'];
-        }
-        $stmtBusca->close();
-
         $caminho_foto = $foto_atual;
 
-        // Upload da imagem
+        // Upload da imagem (se enviada)
         if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
             $nomeTmp = $_FILES['foto']['tmp_name'];
             $nomeArquivo = basename($_FILES['foto']['name']);
@@ -50,13 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (in_array($extensao, $permitidos)) {
                 $pastaUploads = 'uploads/';
-
                 if (!is_dir($pastaUploads)) {
                     mkdir($pastaUploads, 0755, true);
                 }
 
                 $novoNomeArquivo = uniqid() . '.' . $extensao;
-
                 if (move_uploaded_file($nomeTmp, $pastaUploads . $novoNomeArquivo)) {
                     $caminho_foto = $pastaUploads . $novoNomeArquivo;
                 } else {
@@ -70,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$erro) {
             $sqlUpdate = "UPDATE usuarios SET nome = ?, email = ?, foto = ?, apresentacao = ? WHERE id = ?";
             $stmtUpdate = $conn->prepare($sqlUpdate);
-            $stmtUpdate->bind_param("ssssi", $novo_nome, $novo_email, $caminho_foto, $nova_apresentacao, $usuario['id']);
+            $stmtUpdate->bind_param("ssssi", $novo_nome, $novo_email, $caminho_foto, $nova_apresentacao, $usuario_id);
 
             if ($stmtUpdate->execute()) {
                 // Atualiza sessão
@@ -89,12 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $stmtUpdate->close();
         }
-        $conn->close();
     }
 }
-
-// Preenche apresentação para mostrar no textarea no load da página:
-$apresentacao_atual = $usuario['apresentacao'] ?? '';
 ?>
 
 <!DOCTYPE html>
@@ -146,22 +140,26 @@ $apresentacao_atual = $usuario['apresentacao'] ?? '';
         <div class="alert alert-danger"><?= htmlspecialchars($erro) ?></div>
       <?php endif; ?>
 
-      <img src="<?= htmlspecialchars($foto_atual) ?>" alt="" class="foto-atual">
+      <img src="<?= htmlspecialchars($foto_atual) ?>" alt="Foto de Perfil" class="foto-atual"
+           onerror="this.src='img/foto_padrao.png'">
 
       <form method="POST" enctype="multipart/form-data">
         <div class="mb-3">
           <label for="nome" class="form-label perfil-label">Nome</label>
-          <input type="text" id="nome" name="nome" class="form-control" required value="<?= htmlspecialchars($usuario['nome']) ?>">
+          <input type="text" id="nome" name="nome" class="form-control" required
+                 value="<?= htmlspecialchars($nome_atual) ?>">
         </div>
 
         <div class="mb-3">
           <label for="email" class="form-label perfil-label">E-mail</label>
-          <input type="email" id="email" name="email" class="form-control" required value="<?= htmlspecialchars($usuario['email']) ?>">
+          <input type="email" id="email" name="email" class="form-control" required
+                 value="<?= htmlspecialchars($email_atual) ?>">
         </div>
 
         <div class="mb-3">
           <label for="apresentacao" class="form-label perfil-label">Apresentação</label>
-          <textarea id="apresentacao" name="apresentacao" rows="5" class="form-control"><?= htmlspecialchars($apresentacao_atual) ?></textarea>
+          <textarea id="apresentacao" name="apresentacao" rows="5"
+                    class="form-control"><?= htmlspecialchars($apresentacao_atual) ?></textarea>
         </div>
 
         <div class="mb-4">

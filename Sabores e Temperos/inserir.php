@@ -171,9 +171,17 @@ main {
         <a href="perfil.php" class="nav-link">Perfil</a>
     </nav>
   
-    <div class="search-box mt-2 mt-md-0">
-      <input type="text" placeholder="Buscar receitas..." class="form-control search-input">
-    </div>
+     <div class="search-box mt-2 mt-md-0">
+  <form action="buscar.php" method="GET">
+    <input
+      type="text"
+      name="q"
+      placeholder="Buscar receitas..."
+      class="form-control search-input"
+      autocomplete="off"
+    />
+  </form>
+</div>
   </header>
 
   <main class="container my-5">

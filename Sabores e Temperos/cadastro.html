@@ -120,9 +120,17 @@ main {
 
     </nav>
   
-    <div class="search-box mt-2 mt-md-0">
-      <input type="text" placeholder="Buscar receitas..." class="form-control search-input">
-    </div>
+     <div class="search-box mt-2 mt-md-0">
+  <form action="buscar.php" method="GET">
+    <input
+      type="text"
+      name="q"
+      placeholder="Buscar receitas..."
+      class="form-control search-input"
+      autocomplete="off"
+    />
+  </form>
+</div>
   </header>
 <main>
   <div class="container mt-5">
@@ -137,8 +145,9 @@ main {
             </div>
             <div class="mb-3">
               <label for="email" class="form-label">E-mail</label>
-              <input type="email" class="form-control" id="email" name="email" required />
-              <div class="form-text">E-mail invalido.</div>
+              <input type="text" class="form-control" id="email" name="email" required />
+
+              
             </div>
             <div class="mb-3">
               <label for="senha" class="form-label">Senha</label>
@@ -155,7 +164,7 @@ main {
 
             <button type="submit" class="btn btn-verde w-100">Cadastrar</button>
             <div class="text-center mt-3">
-              <a href="login.html">Já tem uma conta? Entrar</a>
+              <a href="perfil.php">Já tem uma conta? Entrar</a>
             </div>
           </form>
         </div>
@@ -166,47 +175,48 @@ main {
 
 <!-- Validação JavaScript -->
 <script>
-  function validarFormulario() {
-    const email = document.getElementById("email").value.trim();
-    const senha = document.getElementById("senha").value;
-    const confirmaSenha = document.getElementById("confirmaSenha").value;
-    const erroDiv = document.getElementById("erro");
+function validarFormulario() {
+  const email = document.getElementById("email");
+  const senha = document.getElementById("senha");
+  const confirmaSenha = document.getElementById("confirmaSenha");
+  const erroDiv = document.getElementById("erro");
 
-    // Limpa erros anteriores
-    erroDiv.classList.add("d-none");
-    erroDiv.innerHTML = "";
+  erroDiv.classList.add("d-none");
+  erroDiv.innerHTML = "";
 
-    // Regex de validação de e-mail
-    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // Limpa classes
+  [email, senha, confirmaSenha].forEach(el => el.classList.remove('is-invalid'));
 
-    if (!regexEmail.test(email)) {
-      erroDiv.innerHTML = "E-mail inválido.";
-      erroDiv.classList.remove("d-none");
-      console.log("Email inválido detectado");
-      return false;
-    }
+  const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (senha.length < 6) {
-      erroDiv.innerHTML = "A senha deve ter pelo menos 6 caracteres.";
-      erroDiv.classList.remove("d-none");
-      console.log("Senha muito curta");
-      return false;
-    }
-
-    if (senha !== confirmaSenha) {
-      erroDiv.innerHTML = "As senhas não coincidem.";
-      erroDiv.classList.remove("d-none");
-      console.log("Senhas diferentes");
-      return false;
-    }
-
-    return true;
-
-  if (localStorage.getItem('logado') === '1') {
-    window.location.href = 'perfil.php';
+  if (!regexEmail.test(email.value.trim())) {
+    erroDiv.innerHTML = "E-mail inválido.";
+    erroDiv.classList.remove("d-none");
+    email.classList.add('is-invalid');
+    email.focus();
+    return false;
   }
 
+  if (senha.value.length < 8) {
+    erroDiv.innerHTML = "A senha deve ter pelo menos 8 caracteres.";
+    erroDiv.classList.remove("d-none");
+    senha.classList.add('is-invalid');
+    senha.focus();
+    return false;
   }
+
+  if (senha.value !== confirmaSenha.value) {
+    erroDiv.innerHTML = "As senhas não coincidem.";
+    erroDiv.classList.remove("d-none");
+    confirmaSenha.classList.add('is-invalid');
+    confirmaSenha.focus();
+    return false;
+  }
+
+  return true;
+}
+
+
 </script>
 
 </main>

@@ -8,13 +8,29 @@ if (!isset($_SESSION['usuario'])) {
     exit();
 }
 
-$usuario = $_SESSION['usuario']; 
+$usuario = $_SESSION['usuario'];
 
-// Define a foto do usuário ou uma imagem padrão
+// Conectar para puxar a apresentação atualizada do banco
+$conn = new mysqli("localhost", "root", "", "sabores");
+if ($conn->connect_error) {
+  die("Erro na conexão: " . $conn->connect_error);
+}
+
+$idUsuario = $usuario['id'];
+$sql = "SELECT apresentacao FROM usuarios WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $idUsuario);
+$stmt->execute();
+$stmt->bind_result($apresentacao);
+$stmt->fetch();
+$stmt->close();
+$conn->close();
+
 $foto = isset($usuario['foto']) && !empty($usuario['foto']) 
     ? $usuario['foto'] 
-    : 'assets/images/default-profile.png';
+    : 'assets/images/default-profile.png';  
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -126,6 +142,23 @@ $foto = isset($usuario['foto']) && !empty($usuario['foto'])
       margin-left: auto;
       margin-right: auto;
     }
+
+   .apresentacao-box {
+  background-color: #f9fdf7;
+  border: 1.5px solid #a5d6a7;
+  padding: 10px 25px 20px 25px; /* menos padding em cima para grudar */
+  border-radius: 12px;
+  min-height: 120px;
+  box-shadow: 0 2px 6px rgba(102, 187, 106, 0.3);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #2e7d32;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  text-align: left;
+  vertical-align: top; /* só para garantir, mas não é tão necessário */
+}
+
   </style>
 
 </head>
@@ -144,9 +177,17 @@ $foto = isset($usuario['foto']) && !empty($usuario['foto'])
     <a href="logout.php" class="nav-link">Sair</a>
   </nav>
 
-  <div class="search-box mt-2 mt-md-0">
-    <input type="text" placeholder="Buscar receitas..." class="form-control search-input">
-  </div>
+   <div class="search-box mt-2 mt-md-0">
+  <form action="buscar.php" method="GET">
+    <input
+      type="text"
+      name="q"
+      placeholder="Buscar receitas..."
+      class="form-control search-input"
+      autocomplete="off"
+    />
+  </form>
+</div>
 </header>
 
 <main class="flex-grow-1">
@@ -162,9 +203,9 @@ $foto = isset($usuario['foto']) && !empty($usuario['foto'])
         <h4 class="mb-3" style="color: #388e3c; font-weight: 600;">Apresentação</h4>
 
         <?php if (!empty($apresentacao)): ?>
-          <p class="text-start mb-4" style="white-space: pre-wrap; border: 1px solid #c8e6c9; background: #f1f8e9; padding: 15px; border-radius: 8px; min-height: 100px;">
+          <div class="apresentacao-box mb-4">
             <?= nl2br(htmlspecialchars($apresentacao)) ?>
-          </p>
+          </div>
         <?php else: ?>
           <p class="text-muted">Você ainda não escreveu sua apresentação.</p>
         <?php endif; ?>

@@ -165,6 +165,26 @@ $result = $conn->query($sql);
   display: flex;
   flex-direction: column;
 }
+
+.btn-success {
+    background-color: #3cb371;
+    border-color: #3cb371;
+    border-radius: 8px;
+    color: white;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-success:hover {
+    background-color: #2e8b57;
+    border-color: #2e8b57;
+    color: white;
+}
+
 main {
   flex: 1;
 }
@@ -190,9 +210,17 @@ main {
         <a href="perfil.php" class="nav-link">Perfil</a>
     </nav>
   
-    <div class="search-box mt-2 mt-md-0">
-      <input type="text" placeholder="Buscar receitas..." class="form-control search-input">
-    </div>
+     <div class="search-box mt-2 mt-md-0">
+  <form action="buscar.php" method="GET">
+    <input
+      type="text"
+      name="q"
+      placeholder="Buscar receitas..."
+      class="form-control search-input"
+      autocomplete="off"
+    />
+  </form>
+</div>
   </header>
 
 
@@ -224,7 +252,8 @@ class="bg-light py-4 mb-4">
                     echo htmlspecialchars(strlen($descricao) > 90 ? substr($descricao, 0, 90) . '...' : $descricao);
                   ?>
                 </p>
-                <a href="GOAT.php?id=<?php echo $row['id']; ?>" class="btn btn-green">Ver Receita</a>
+                <a href="GOAT.php?id=<?php echo $row['id']; ?>" class="btn btn-success">Ver Receita</a>
+
               </div>
             </div>
           </div>
