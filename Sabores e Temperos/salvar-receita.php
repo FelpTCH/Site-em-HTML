@@ -22,7 +22,7 @@ session_start();
     <div class="text-center">
       <h2 class="text-success">Receita salva com sucesso!</h2>
       <p>Você será redirecionado em instantes...</p>
-      <a href="inserir.html" class="btn btn-outline-success mt-3">Voltar agora</a>
+      <a href="inserir.php" class="btn btn-outline-success mt-3">Voltar agora</a>
     </div>
   </main>
 

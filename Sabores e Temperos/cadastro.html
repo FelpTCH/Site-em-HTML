@@ -107,15 +107,16 @@ main {
 <body class="bg-light">
 
   <header class="custom-header d-flex align-items-center justify-content-between flex-wrap px-5 py-3 shadow">
-    <a href="index.html" class="d-flex align-items-center gap-2 text-decoration-none">
+    <a href="index.php" class="d-flex align-items-center gap-2 text-decoration-none">
       <img src="assets/images/logo.png" alt="Logo do site" class="logo-img">
       <h1 class="logo-text m-0 text-white fs-4">Sabores e Temperos</h1>
     </a>
   
     <nav class="nav-links d-flex gap-4 flex-wrap justify-content-center">
-      <a href="index.html" class="nav-link">Início</a>
-      <a href="inserir.html" class="nav-link">Insira sua receita</a>
-      <a href="cadastro_redirect.php" class="nav-link">Conta</a>
+      <a href="index.php" class="nav-link">Início</a>
+      <a href="inserir.php" class="nav-link">Insira sua receita</a>
+      <a href="cadastro.php" class="nav-link">Conta</a>
+      <a href="perfil.php" class="nav-link">Perfil</a>
 
     </nav>
   
@@ -129,7 +130,7 @@ main {
       <div class="col-md-6">
         <div class="card shadow p-4">
           <h2 class="text-center mb-4">Criar Conta</h2>
-          <form action="cadastro.php" method="POST">
+          <form action="cadastro.php" method="POST" onsubmit="return validarFormulario()">
             <div class="mb-3">
               <label for="nome" class="form-label">Nome Completo</label>
               <input type="text" class="form-control" id="nome" name="nome" required />
@@ -137,15 +138,21 @@ main {
             <div class="mb-3">
               <label for="email" class="form-label">E-mail</label>
               <input type="email" class="form-control" id="email" name="email" required />
+              <div class="form-text">E-mail invalido.</div>
             </div>
             <div class="mb-3">
               <label for="senha" class="form-label">Senha</label>
               <input type="password" class="form-control" id="senha" name="senha" required />
+              <div class="form-text">A senha deve ter pelo menos 8 caracteres.</div>
             </div>
             <div class="mb-3">
               <label for="confirmaSenha" class="form-label">Confirmar Senha</label>
               <input type="password" class="form-control" id="confirmaSenha" name="confirmaSenha" required />
             </div>
+
+            <!-- Alerta de erro -->
+            <div id="erro" class="alert alert-danger d-none" role="alert"></div>
+
             <button type="submit" class="btn btn-verde w-100">Cadastrar</button>
             <div class="text-center mt-3">
               <a href="login.html">Já tem uma conta? Entrar</a>
@@ -155,6 +162,53 @@ main {
       </div>
     </div>
   </div>
+</main>
+
+<!-- Validação JavaScript -->
+<script>
+  function validarFormulario() {
+    const email = document.getElementById("email").value.trim();
+    const senha = document.getElementById("senha").value;
+    const confirmaSenha = document.getElementById("confirmaSenha").value;
+    const erroDiv = document.getElementById("erro");
+
+    // Limpa erros anteriores
+    erroDiv.classList.add("d-none");
+    erroDiv.innerHTML = "";
+
+    // Regex de validação de e-mail
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!regexEmail.test(email)) {
+      erroDiv.innerHTML = "E-mail inválido.";
+      erroDiv.classList.remove("d-none");
+      console.log("Email inválido detectado");
+      return false;
+    }
+
+    if (senha.length < 6) {
+      erroDiv.innerHTML = "A senha deve ter pelo menos 6 caracteres.";
+      erroDiv.classList.remove("d-none");
+      console.log("Senha muito curta");
+      return false;
+    }
+
+    if (senha !== confirmaSenha) {
+      erroDiv.innerHTML = "As senhas não coincidem.";
+      erroDiv.classList.remove("d-none");
+      console.log("Senhas diferentes");
+      return false;
+    }
+
+    return true;
+
+  if (localStorage.getItem('logado') === '1') {
+    window.location.href = 'perfil.php';
+  }
+
+  }
+</script>
+
 </main>
   <footer class="background-color text-white mt-3 p-3 text-center">
     <div class="text-center">

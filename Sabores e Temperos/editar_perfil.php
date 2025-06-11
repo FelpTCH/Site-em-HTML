@@ -3,7 +3,6 @@ ini_set('session.gc_maxlifetime', 86400); // 24 horas em segundos
 session_set_cookie_params(86400); // Cookie válido por 24 horas
 session_start();
 
-
 if (!isset($_SESSION['usuario']) || !is_array($_SESSION['usuario'])) {
     header("Location: login.html");
     exit();
@@ -13,63 +12,89 @@ $usuario = $_SESSION['usuario'];
 $erro = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $novo_nome = trim($_POST['nome']);
-    $novo_email = trim($_POST['email']);
+    $novo_nome = trim($_POST['nome'] ?? '');
+    $novo_email = trim($_POST['email'] ?? '');
+    $nova_apresentacao = trim($_POST['apresentacao'] ?? '');
 
-    // Dados da conexão
-    $conn = new mysqli("localhost", "root", "", "sabores");
-    if ($conn->connect_error) {
-        die("Erro na conexão: " . $conn->connect_error);
-    }
+    if (empty($novo_nome) || empty($novo_email)) {
+        $erro = "Nome e email são obrigatórios.";
+    } elseif (!filter_var($novo_email, FILTER_VALIDATE_EMAIL)) {
+        $erro = "Email inválido.";
+    } else {
+        $conn = new mysqli("localhost", "root", "", "sabores");
+        if ($conn->connect_error) {
+            die("Erro na conexão: " . $conn->connect_error);
+        }
 
-    // Caminho da foto atual ou null
-    $caminho_foto = $usuario['foto'] ?? null;
+        // Busca foto atual
+        $foto_atual = null;
+        $sqlBusca = "SELECT foto FROM usuarios WHERE id = ?";
+        $stmtBusca = $conn->prepare($sqlBusca);
+        $stmtBusca->bind_param("i", $usuario['id']);
+        $stmtBusca->execute();
+        $resBusca = $stmtBusca->get_result();
+        if ($resBusca->num_rows === 1) {
+            $row = $resBusca->fetch_assoc();
+            $foto_atual = $row['foto'];
+        }
+        $stmtBusca->close();
 
-    // Upload da imagem, se enviado
-    if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
-        $nomeTmp = $_FILES['foto']['tmp_name'];
-        $nomeArquivo = basename($_FILES['foto']['name']);
-        $extensao = strtolower(pathinfo($nomeArquivo, PATHINFO_EXTENSION));
-        $permitidos = ['jpg', 'jpeg', 'png', 'gif'];
+        $caminho_foto = $foto_atual;
 
-        if (in_array($extensao, $permitidos)) {
-            $pastaUploads = 'uploads/';
+        // Upload da imagem
+        if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+            $nomeTmp = $_FILES['foto']['tmp_name'];
+            $nomeArquivo = basename($_FILES['foto']['name']);
+            $extensao = strtolower(pathinfo($nomeArquivo, PATHINFO_EXTENSION));
+            $permitidos = ['jpg', 'jpeg', 'png', 'gif'];
 
-            // Criar a pasta caso não exista
-            if (!is_dir($pastaUploads)) {
-                mkdir($pastaUploads, 0755, true);
-            }
+            if (in_array($extensao, $permitidos)) {
+                $pastaUploads = 'uploads/';
 
-            $novoNomeArquivo = uniqid() . '.' . $extensao;
+                if (!is_dir($pastaUploads)) {
+                    mkdir($pastaUploads, 0755, true);
+                }
 
-            if (move_uploaded_file($nomeTmp, $pastaUploads . $novoNomeArquivo)) {
-                $caminho_foto = $pastaUploads . $novoNomeArquivo;
+                $novoNomeArquivo = uniqid() . '.' . $extensao;
+
+                if (move_uploaded_file($nomeTmp, $pastaUploads . $novoNomeArquivo)) {
+                    $caminho_foto = $pastaUploads . $novoNomeArquivo;
+                } else {
+                    $erro = "Erro ao salvar a imagem.";
+                }
             } else {
-                $erro = "Erro ao salvar a imagem.";
+                $erro = "Formato de imagem não permitido. Use jpg, png ou gif.";
             }
-        } else {
-            $erro = "Formato de imagem não permitido. Use jpg, png ou gif.";
         }
-    }
 
-    if (!$erro) {
-        $sql = "UPDATE usuarios SET nome = ?, email = ?, foto = ? WHERE id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssi", $novo_nome, $novo_email, $caminho_foto, $usuario['id']);
+        if (!$erro) {
+            $sqlUpdate = "UPDATE usuarios SET nome = ?, email = ?, foto = ?, apresentacao = ? WHERE id = ?";
+            $stmtUpdate = $conn->prepare($sqlUpdate);
+            $stmtUpdate->bind_param("ssssi", $novo_nome, $novo_email, $caminho_foto, $nova_apresentacao, $usuario['id']);
 
-        if ($stmt->execute()) {
-            $_SESSION['usuario']['nome'] = $novo_nome;
-            $_SESSION['usuario']['email'] = $novo_email;
-            $_SESSION['usuario']['foto'] = $caminho_foto;
-            header("Location: perfil.php");
-            exit();
-        } else {
-            $erro = "Erro ao atualizar perfil.";
+            if ($stmtUpdate->execute()) {
+                // Atualiza sessão
+                $_SESSION['usuario']['nome'] = $novo_nome;
+                $_SESSION['usuario']['email'] = $novo_email;
+                $_SESSION['usuario']['foto'] = $caminho_foto;
+                $_SESSION['usuario']['apresentacao'] = $nova_apresentacao;
+
+                $stmtUpdate->close();
+                $conn->close();
+
+                header("Location: perfil.php");
+                exit();
+            } else {
+                $erro = "Erro ao atualizar perfil.";
+            }
+            $stmtUpdate->close();
         }
+        $conn->close();
     }
-
-    $conn->close();
 }
+
+// Preenche apresentação para mostrar no textarea no load da página:
+$apresentacao_atual = $usuario['apresentacao'] ?? '';
 ?>
 
 <!DOCTYPE html>
@@ -121,9 +146,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="alert alert-danger"><?= htmlspecialchars($erro) ?></div>
       <?php endif; ?>
 
-      <?php
-      $foto_atual = $usuario['foto'] ?? 'assets/images/default-profile.png';
-      ?>
       <img src="<?= htmlspecialchars($foto_atual) ?>" alt="" class="foto-atual">
 
       <form method="POST" enctype="multipart/form-data">
@@ -135,6 +157,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="mb-3">
           <label for="email" class="form-label perfil-label">E-mail</label>
           <input type="email" id="email" name="email" class="form-control" required value="<?= htmlspecialchars($usuario['email']) ?>">
+        </div>
+
+        <div class="mb-3">
+          <label for="apresentacao" class="form-label perfil-label">Apresentação</label>
+          <textarea id="apresentacao" name="apresentacao" rows="5" class="form-control"><?= htmlspecialchars($apresentacao_atual) ?></textarea>
         </div>
 
         <div class="mb-4">

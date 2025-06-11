@@ -1,17 +1,14 @@
 <?php
 ini_set('session.gc_maxlifetime', 86400); // 24 horas em segundos
 session_set_cookie_params(86400); // Cookie válido por 24 horas
-// Iniciar a sessão e verificar se o usuário está logado
 session_start();
 
-if (!isset($_SESSION['usuario']) || !is_array($_SESSION['usuario'])) {
-  header("Location: login.html");
-  exit();
+if (!isset($_SESSION['usuario'])) {
+    header("Location: login.html");
+    exit();
 }
 
-$usuario = $_SESSION['usuario']; // agora está garantido
-
-$usuario = $_SESSION['usuario']; // Ex: $_SESSION['usuario'] = ['nome' => 'João', 'email' => 'joao@email.com'];
+$usuario = $_SESSION['usuario']; 
 
 // Define a foto do usuário ou uma imagem padrão
 $foto = isset($usuario['foto']) && !empty($usuario['foto']) 
@@ -20,7 +17,6 @@ $foto = isset($usuario['foto']) && !empty($usuario['foto'])
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -120,41 +116,39 @@ $foto = isset($usuario['foto']) && !empty($usuario['foto'])
     }
 
     .foto-perfil {
-  width: 140px;
-  height: 140px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 3px solid #2e7d32;
-  margin-bottom: 20px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
+      width: 140px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid #2e7d32;
+      margin-bottom: 20px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
   </style>
 
 </head>
 <body class="bg-light">
 
 <header class="custom-header d-flex align-items-center justify-content-between flex-wrap px-5 py-3 shadow">
-  <a href="index.html" class="d-flex align-items-center gap-2 text-decoration-none">
+  <a href="index.php" class="d-flex align-items-center gap-2 text-decoration-none">
     <img src="assets/images/logo.png" alt="Logo do site" class="logo-img">
     <h1 class="logo-text m-0 text-white fs-4">Sabores e Temperos</h1>
   </a>
 
   <nav class="nav-links d-flex gap-4 flex-wrap justify-content-center">
-    <a href="index.html" class="nav-link">Início</a>
-    <a href="inserir.html" class="nav-link">Insira sua receita</a>
-    <a href="perfil.php" class="nav-link">Perfil</a>
+    <a href="index.php" class="nav-link">Início</a>
+    <a href="receitas.php" class="nav-link">Receitas</a>
+    <a href="inserir.php" class="nav-link">Insira sua receita</a>
     <a href="logout.php" class="nav-link">Sair</a>
   </nav>
-
-  
 
   <div class="search-box mt-2 mt-md-0">
     <input type="text" placeholder="Buscar receitas..." class="form-control search-input">
   </div>
 </header>
+
 <main class="flex-grow-1">
   <div class="container mt-5">
     <div class="row justify-content-center">
@@ -164,17 +158,24 @@ $foto = isset($usuario['foto']) && !empty($usuario['foto'])
         <h2 class="mb-4">Meu Perfil</h2>
         <p><span class="perfil-label">Nome:</span> <?= htmlspecialchars($usuario['nome']) ?></p>
         <p><span class="perfil-label">E-mail:</span> <?= htmlspecialchars($usuario['email']) ?></p>
+
+        <h4 class="mb-3" style="color: #388e3c; font-weight: 600;">Apresentação</h4>
+
+        <?php if (!empty($apresentacao)): ?>
+          <p class="text-start mb-4" style="white-space: pre-wrap; border: 1px solid #c8e6c9; background: #f1f8e9; padding: 15px; border-radius: 8px; min-height: 100px;">
+            <?= nl2br(htmlspecialchars($apresentacao)) ?>
+          </p>
+        <?php else: ?>
+          <p class="text-muted">Você ainda não escreveu sua apresentação.</p>
+        <?php endif; ?>
+
         <div class="mt-4">
           <a href="editar_perfil.php" class="btn btn-outline-success">Editar Perfil</a>
         </div>
       </div>
     </div>
   </div>
-
-  
 </main>
-
-
 
 <footer class="text-white mt-5 p-3 text-center">
   <p class="mb-0">&copy; 2025 | Sabores e Temperos - Todos os direitos reservados.</p>
